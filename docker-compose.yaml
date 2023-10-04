@@ -1,0 +1,7 @@
+services:
+  mysql:
+    image: mysql
+    ports:
+      - 6050:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
