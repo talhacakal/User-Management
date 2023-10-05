@@ -1,4 +1,4 @@
-package com.jackal.user.management.Config;
+package com.jackal.user.management.Service;
 
 import com.jackal.user.management.Token.JwtService;
 import com.jackal.user.management.Token.TokenType;
