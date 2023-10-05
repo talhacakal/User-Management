@@ -6,11 +6,9 @@ import com.jackal.user.management.Entity.DTO.UserDTO;
 import com.jackal.user.management.Token.JwtService;
 import com.jackal.user.management.Token.Token;
 import com.jackal.user.management.Token.TokenRepository;
-import com.jackal.user.management.Token.TokenType;
 import com.jackal.user.management.User.AppUser;
 import com.jackal.user.management.User.AppUserRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -56,7 +54,7 @@ public class AuthenticationService {
             return ResponseEntity.ok(new UserDTO(savedUser));
 
         } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
     public ResponseEntity<?> signin(AuthenticationRequest authRequest){
@@ -80,7 +78,7 @@ public class AuthenticationService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         String requestRefreshToken = this.jwtService.extractTokenFromCookie(request.getCookies(), REFRESH);
         String refreshToken = this.tokenRepository
                 .findByToken(requestRefreshToken)
@@ -95,9 +93,9 @@ public class AuthenticationService {
             var jwt = this.jwtService.generateJwtToken(user);
 
             this.jwtService.deleteUserJwtTokens(user.getEmail());
-            this.jwtService.saveUserTokens(user,jwt,refreshToken);
+            this.jwtService.saveJwtToken(user, jwt);
 
-            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, generateJwtCookie(jwt).toString()).build();
+            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, generateJwtCookie(jwt)).build();
 
         } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
@@ -105,20 +103,20 @@ public class AuthenticationService {
 
     private ResponseEntity<?> userCookies(String jwt, String refresh_token){
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, generateJwtCookie(jwt).toString())
-                .header(HttpHeaders.SET_COOKIE, generateRefreshCookie(refresh_token).toString())
+                .header(HttpHeaders.SET_COOKIE, generateJwtCookie(jwt))
+                .header(HttpHeaders.SET_COOKIE, generateRefreshCookie(refresh_token))
                 .build();
     }
-    private ResponseCookie generateJwtCookie(String jwt){
+    private String generateJwtCookie(String jwt){
         return ResponseCookie
                 .from(BEARER.name(), jwt)
                 .path("/")
-                .maxAge(this.jwtService.getJwtExpirationAsSecond()).build();
+                .maxAge(this.jwtService.getJwtExpirationAsSecond()).build().toString();
     }
-    private ResponseCookie generateRefreshCookie(String refresh_token){
+    private String generateRefreshCookie(String refresh_token){
         return ResponseCookie
                 .from(REFRESH.name(), refresh_token)
                 .path("/")
-                .maxAge(this.jwtService.getRefreshExpirationAsSecond()).build();
+                .maxAge(this.jwtService.getRefreshExpirationAsSecond()).build().toString();
     }
 }

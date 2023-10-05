@@ -35,15 +35,6 @@ public class JwtService {
                 .orElse(null);
     }
 
-    public void deleteAllUserTokens(String email){
-        List<Token> tokens = this.tokenRepository.findByUser_Email(email);
-        this.tokenRepository.deleteAll(tokens);
-    }
-    public void deleteUserJwtTokens(String email){
-        List<Token> tokens = this.tokenRepository.findByUser_EmailAndTokenType(email, TokenType.BEARER);
-        this.tokenRepository.deleteAll(tokens);
-    }
-
     public String generateJwtToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, jwtExpiration);
     }
@@ -60,6 +51,15 @@ public class JwtService {
     }
     public void saveRefrestToken(AppUser user, String refresh_token){
         this.tokenRepository.save(new Token(user, refresh_token, TokenType.REFRESH, false, false));
+    }
+
+    public void deleteAllUserTokens(String email){
+        List<Token> tokens = this.tokenRepository.findByUser_Email(email);
+        this.tokenRepository.deleteAll(tokens);
+    }
+    public void deleteUserJwtTokens(String email){
+        List<Token> tokens = this.tokenRepository.findByUser_EmailAndTokenType(email, TokenType.BEARER);
+        this.tokenRepository.deleteAll(tokens);
     }
 
     public String getUsernameFromJwt(String token){
@@ -86,9 +86,7 @@ public class JwtService {
         Claims claims = getClaims(token);
         return claimsResolver.apply(claims);
     }
-    private <T> T demo(String str, Function<TokenRepository, T> claimsResolver){
-        return claimsResolver.apply(tokenRepository);
-    }
+
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
         return Jwts.builder()
                 .setClaims(extraClaims)

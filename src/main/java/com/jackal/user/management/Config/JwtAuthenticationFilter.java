@@ -18,12 +18,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.crypto.spec.PSource;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -50,7 +47,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
            username = jwtService.getUsernameFromJwt(jwt);
 
            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-               var user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found."));
+               var user = userRepository.findByEmail(username)
+                       .orElseThrow(() -> new UsernameNotFoundException("User not found."));
                var isTokenValid = this.tokenRepository.findByToken(jwt)
                        .map(t -> !t.isExpired() && !t.isRevoked())
                        .orElse(false);
@@ -64,13 +62,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
        } catch (NullPointerException | ExpiredJwtException | IllegalArgumentException | UnsupportedJwtException | MalformedJwtException | SignatureException e){
            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-       } catch (Exception e){
-           response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
        }
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
         return Arrays.asList(WHITE_LIST_URL).contains(path);
     }

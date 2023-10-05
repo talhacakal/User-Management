@@ -7,9 +7,9 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 import static com.jackal.user.management.Token.TokenType.BEARER;
@@ -46,7 +46,7 @@ public class SecurityConfiguration {
                                 .logoutUrl("/api/v1/security/logout")
                                 .addLogoutHandler(logoutHandler)
                                 .deleteCookies(BEARER.name(), REFRESH.name())
-                                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+                                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
                 );
         return http.build();
     }
