@@ -1,4 +1,4 @@
-package com.jackal.user.management.User;
+package com.jackal.user.management.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.jackal.user.management.User.Permission.*;
+import static com.jackal.user.management.user.Permission.*;
 
 @RequiredArgsConstructor
 public enum Role {

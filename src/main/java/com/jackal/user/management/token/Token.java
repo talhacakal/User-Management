@@ -1,6 +1,6 @@
-package com.jackal.user.management.Token;
+package com.jackal.user.management.token;
 
-import com.jackal.user.management.User.AppUser;
+import com.jackal.user.management.user.AppUser;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

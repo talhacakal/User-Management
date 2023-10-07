@@ -1,7 +1,7 @@
-package com.jackal.user.management.Controller;
+package com.jackal.user.management.controller;
 
-import com.jackal.user.management.Entity.DTO.ChangePasswordRequest;
-import com.jackal.user.management.Service.UserManagementService;
+import com.jackal.user.management.dto.ChangePasswordRequest;
+import com.jackal.user.management.service.UserManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -1,6 +1,6 @@
-package com.jackal.user.management.User;
+package com.jackal.user.management.user;
 
-import com.jackal.user.management.Token.Token;
+import com.jackal.user.management.token.Token;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +26,8 @@ public class AppUser implements UserDetails {
     @Column(unique = true)
     private String email;
     private String password;
+    @Column(columnDefinition = "default false")
+    private boolean enabled;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -73,6 +75,6 @@ public class AppUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }

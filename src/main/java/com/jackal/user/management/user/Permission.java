@@ -1,4 +1,4 @@
-package com.jackal.user.management.User;
+package com.jackal.user.management.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

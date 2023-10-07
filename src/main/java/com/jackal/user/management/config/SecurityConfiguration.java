@@ -1,4 +1,4 @@
-package com.jackal.user.management.Config;
+package com.jackal.user.management.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -12,10 +12,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
-import static com.jackal.user.management.Token.TokenType.BEARER;
-import static com.jackal.user.management.Token.TokenType.REFRESH;
-import static com.jackal.user.management.User.Role.ADMIN;
-import static com.jackal.user.management.User.Role.USER;
+import static com.jackal.user.management.token.TokenType.BEARER;
+import static com.jackal.user.management.token.TokenType.REFRESH;
+import static com.jackal.user.management.user.Role.ADMIN;
+import static com.jackal.user.management.user.Role.USER;
 
 @Configuration
 @EnableWebSecurity

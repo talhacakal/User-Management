@@ -1,6 +1,6 @@
-package com.jackal.user.management.Token;
+package com.jackal.user.management.token;
 
-import com.jackal.user.management.User.AppUser;
+import com.jackal.user.management.user.AppUser;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -41,16 +41,22 @@ public class JwtService {
     public String generateRefreshToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, refreshExpiration);
     }
+    public String generateEmailVerificationToken(UserDetails userDetails){
+        return generateToken(new HashMap<>(), userDetails, jwtExpiration);
+    }
 
     public void saveUserTokens(AppUser user, String jwt, String refresh_token){
         this.saveJwtToken(user, jwt);
         this.saveRefrestToken(user, refresh_token);
     }
-    public void saveJwtToken(AppUser user, String jwt){
-        this.tokenRepository.save(new Token(user, jwt, TokenType.BEARER, false, false));
-    }
     public void saveRefrestToken(AppUser user, String refresh_token){
-        this.tokenRepository.save(new Token(user, refresh_token, TokenType.REFRESH, false, false));
+        this.saveToken(user,refresh_token,TokenType.REFRESH);
+    }
+    public void saveJwtToken(AppUser user, String jwt){
+        this.saveToken(user,jwt,TokenType.BEARER);
+    }
+    public void saveToken(AppUser user, String jwt, TokenType tokenType){
+        this.tokenRepository.save(new Token(user, jwt, tokenType, false, false));
     }
 
     public void deleteAllUserTokens(String email){
@@ -65,11 +71,22 @@ public class JwtService {
     public String getUsernameFromJwt(String token){
         return extractClaim(token, Claims::getSubject);
     }
+    public String getUsarnemeFromTokenIgnoreExp(String token){
+        try {
+            return extractClaim(token, Claims::getSubject);
+        } catch (ExpiredJwtException e){
+            return e.getClaims().getSubject();
+        }
+    }
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
     public boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        try {
+            return extractExpiration(token).before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
     }
     public boolean isTokenValid(String token, AppUser user) {
         String email = getUsernameFromJwt(token);

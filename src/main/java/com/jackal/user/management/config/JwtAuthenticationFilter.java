@@ -1,9 +1,9 @@
-package com.jackal.user.management.Config;
+package com.jackal.user.management.config;
 
-import com.jackal.user.management.Token.JwtService;
-import com.jackal.user.management.Token.TokenRepository;
-import com.jackal.user.management.Token.TokenType;
-import com.jackal.user.management.User.AppUserRepository;
+import com.jackal.user.management.token.JwtService;
+import com.jackal.user.management.token.TokenRepository;
+import com.jackal.user.management.token.TokenType;
+import com.jackal.user.management.user.AppUserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -35,6 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String[] WHITE_LIST_URL = {
             "/api/v1/auth/signin",
             "/api/v1/auth/signup",
+            "/api/v1/auth/signup/verifyEmail",
             "/api/v1/auth/refresh-token"
     };
 

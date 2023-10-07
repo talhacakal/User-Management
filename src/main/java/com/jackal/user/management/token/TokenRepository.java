@@ -1,4 +1,4 @@
-package com.jackal.user.management.Token;
+package com.jackal.user.management.token;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

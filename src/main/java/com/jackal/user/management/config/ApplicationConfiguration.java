@@ -1,6 +1,6 @@
-package com.jackal.user.management.Config;
+package com.jackal.user.management.config;
 
-import com.jackal.user.management.User.AppUserRepository;
+import com.jackal.user.management.user.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

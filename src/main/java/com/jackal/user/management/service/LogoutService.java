@@ -1,7 +1,7 @@
-package com.jackal.user.management.Service;
+package com.jackal.user.management.service;
 
-import com.jackal.user.management.Token.JwtService;
-import com.jackal.user.management.Token.TokenType;
+import com.jackal.user.management.token.JwtService;
+import com.jackal.user.management.token.TokenType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

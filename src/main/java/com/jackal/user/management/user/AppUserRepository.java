@@ -1,4 +1,4 @@
-package com.jackal.user.management.User;
+package com.jackal.user.management.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
