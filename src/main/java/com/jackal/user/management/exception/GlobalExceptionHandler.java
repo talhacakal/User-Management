@@ -15,22 +15,25 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<?> BadCredentialsExceptionHandler(){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid username or password");
+    public ResponseEntity<ErrorDetails> BadCredentialsExceptionHandler(){
+        var error = new ErrorDetails("Invalid username or password",HttpStatus.NOT_FOUND.value());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex){
-        return ResponseEntity
-                .status(ex.getStatusCode())
-                .body(
-                        ex.getFieldErrors()
-                                .stream()
-                                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                                .toList());
+    public ResponseEntity<ErrorDetails> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex){
+        var error = new ErrorDetails(
+                ex.getFieldErrors()
+                        .stream()
+                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                        .toList(),
+                ex.getStatusCode().value()
+        );
+        return new ResponseEntity<>(error, ex.getStatusCode());
     }
     @ExceptionHandler({NoSuchElementException.class, UsernameNotFoundException.class})
     public ResponseEntity<?> NoSuchElementExceptionHandler(Exception ex){
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        var error = new ErrorDetails(ex.getMessage(),HttpStatus.UNAUTHORIZED.value());
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
 }
