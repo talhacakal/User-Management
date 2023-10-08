@@ -2,6 +2,7 @@ package com.jackal.user.management.controller;
 
 import com.jackal.user.management.dto.ChangePasswordRequest;
 import com.jackal.user.management.service.UserManagementService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import java.security.Principal;
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class UserManagementController {
 
     private final UserManagementService userManagementService;

@@ -1,5 +1,6 @@
 package com.jackal.user.management.config;
 
+import com.jackal.user.management.constant.SecurityConstants;
 import com.jackal.user.management.token.JwtService;
 import com.jackal.user.management.token.TokenRepository;
 import com.jackal.user.management.token.TokenType;
@@ -19,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -29,15 +31,9 @@ import java.util.Arrays;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final AntPathMatcher antPathMatcher;
     private final TokenRepository tokenRepository;
     private final AppUserRepository userRepository;
-
-    private static final String[] WHITE_LIST_URL = {
-            "/api/v1/auth/signin",
-            "/api/v1/auth/signup",
-            "/api/v1/auth/signup/verifyEmail",
-            "/api/v1/auth/refresh-token"
-    };
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -69,6 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return Arrays.asList(WHITE_LIST_URL).contains(path);
+        return Arrays.stream(SecurityConstants.WHITE_LIST_URL)
+                .anyMatch(e -> this.antPathMatcher.match(e, path));
     }
 }

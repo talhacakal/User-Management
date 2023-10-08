@@ -1,5 +1,6 @@
 package com.jackal.user.management.config;
 
+import com.jackal.user.management.constant.SecurityConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,9 +34,9 @@ public class SecurityConfiguration {
                 .csrf().disable()
                 .authorizeHttpRequests(request->
                         request
-                                .requestMatchers("/api/v1/auth/**").permitAll()
-                                .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
-                                .requestMatchers("/api/v1/user/**").hasAnyRole(USER.name(), ADMIN.name())
+                                .requestMatchers(SecurityConstants.WHITE_LIST_URL).permitAll()
+                                .requestMatchers(SecurityConstants.ADMIN_LIST_URL).hasAnyRole(ADMIN.name())
+                                .requestMatchers(SecurityConstants.USER_LIST_URL).hasAnyRole(USER.name(), ADMIN.name())
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
