@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                var user = userRepository.findByEmail(username)
                        .orElseThrow(() -> new UsernameNotFoundException("User not found."));
-               var isTokenValid = this.tokenRepository.findByToken(jwt)
+               var isTokenValid = this.tokenRepository.findByTokenAndTokenType(jwt, TokenType.BEARER)
                        .map(t -> !t.isExpired() && !t.isRevoked())
                        .orElse(false);
                if (jwtService.isTokenValid(jwt, user) && isTokenValid){

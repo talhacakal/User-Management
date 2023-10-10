@@ -1,11 +1,20 @@
 package com.jackal.user.management.service;
 
 import com.jackal.user.management.dto.ChangePasswordRequest;
+import com.jackal.user.management.dto.PasswordRenewRequest;
+import com.jackal.user.management.event.ForgotPasswordEvent;
+import com.jackal.user.management.exception.ErrorDetails;
+import com.jackal.user.management.exception.UserNotFoundException;
+import com.jackal.user.management.token.JwtService;
+import com.jackal.user.management.token.TokenType;
 import com.jackal.user.management.user.AppUser;
 import com.jackal.user.management.user.AppUserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +26,9 @@ import java.security.Principal;
 public class UserManagementService {
 
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
     private final AppUserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ResponseEntity<?> changePassword(ChangePasswordRequest passwordRequest, Principal userPrincipal) {
         var user = (AppUser) ((UsernamePasswordAuthenticationToken) userPrincipal).getPrincipal();
@@ -32,5 +43,31 @@ public class UserManagementService {
         this.userRepository.save(user);
 
         return ResponseEntity.ok().build();
+    }
+    public ResponseEntity<?> forgotpassword(HttpServletRequest request, String email) throws UserNotFoundException {
+        var user = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Invalid email."));
+
+        var baseURI = request.getRequestURL().toString().replace(request.getRequestURI(), "");
+        this.eventPublisher.publishEvent(new ForgotPasswordEvent(user, baseURI));
+
+        return ResponseEntity.ok("Password reset email sent");
+    }
+    public ResponseEntity<?> renewPassword(String token, PasswordRenewRequest passwordRenew) throws UserNotFoundException {
+
+        if (this.jwtService.isTokenExpired(token)  || !this.jwtService.getExtraClaimFromToken(token, "TokenType").equals(TokenType.PASSWORD_REFRESH.name()))
+            return new ResponseEntity<>(new ErrorDetails("Token is invalid.", HttpStatus.FORBIDDEN.value()), HttpStatus.UNAUTHORIZED);
+
+        if (!passwordRenew.getNewPassword().equals(passwordRenew.getConfirmationPassword()))
+            throw new BadCredentialsException("Passwords do not match.");
+
+        var email = this.jwtService.getUsernameFromJwt(token);
+        var user = this.userRepository.findByEmail(email)
+                .orElseThrow( () -> new UserNotFoundException("User not found"));
+        user.setPassword(this.passwordEncoder.encode(passwordRenew.getNewPassword()));
+        this.userRepository.save(user);
+
+        return ResponseEntity.ok().build();
+
     }
 }

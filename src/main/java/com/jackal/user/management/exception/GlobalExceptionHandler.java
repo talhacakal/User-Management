@@ -15,8 +15,8 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorDetails> BadCredentialsExceptionHandler(){
-        var error = new ErrorDetails("Invalid username or password",HttpStatus.NOT_FOUND.value());
+    public ResponseEntity<ErrorDetails> BadCredentialsExceptionHandler(BadCredentialsException ex){
+        var error = new ErrorDetails(ex.getMessage(),HttpStatus.NOT_FOUND.value());
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)

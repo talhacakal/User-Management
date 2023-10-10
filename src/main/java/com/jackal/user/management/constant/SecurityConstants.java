@@ -5,6 +5,12 @@ public class SecurityConstants {
     public static final String[] WHITE_LIST_URL = {
             "/api/v1/auth/**",
             "/api/public/**",
+
+            "/api/v1/user/forgotpassword",
+            "/api/v1/user/renewPassword",
+            "/ResetPasswordPage.html",
+            "/PasswordRenewPage",
+
             "/v2/api-docs",
             "/v3/api-docs",
             "/v3/api-docs/**",

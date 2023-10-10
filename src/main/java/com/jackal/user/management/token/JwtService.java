@@ -41,8 +41,8 @@ public class JwtService {
     public String generateRefreshToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, refreshExpiration);
     }
-    public String generateEmailVerificationToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(), userDetails, jwtExpiration);
+    public String generateTokenWithExtraClaims(UserDetails userDetails, Map<String, Object> extraClaims){
+        return generateToken(extraClaims, userDetails, jwtExpiration);
     }
 
     public void saveUserTokens(AppUser user, String jwt, String refresh_token){
@@ -63,13 +63,20 @@ public class JwtService {
         List<Token> tokens = this.tokenRepository.findByUser_Email(email);
         this.tokenRepository.deleteAll(tokens);
     }
-    public void deleteUserJwtTokens(String email){
-        List<Token> tokens = this.tokenRepository.findByUser_EmailAndTokenType(email, TokenType.BEARER);
+    public void deleteUserTokens(String email, TokenType tokenType){
+        List<Token> tokens = this.tokenRepository.findByUser_EmailAndTokenType(email, tokenType);
         this.tokenRepository.deleteAll(tokens);
     }
 
     public String getUsernameFromJwt(String token){
         return extractClaim(token, Claims::getSubject);
+    }
+    public String getExtraClaimFromToken(String token, String claim) {
+        try {
+            return extractClaim(token, claims ->  claims.get(claim)).toString();
+        } catch (NullPointerException e) {
+            return "";
+        }
     }
     public String getUsarnemeFromTokenIgnoreExp(String token){
         try {

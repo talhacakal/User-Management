@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TokenRepository extends JpaRepository<Token, Integer> {
-    Optional<Token> findByToken(String token);
+    Optional<Token> findByTokenAndTokenType(String token, TokenType tokenType);
     List<Token> findByUser_Email(String email);
     List<Token> findByUser_EmailAndTokenType(String email, TokenType tokenType);
 

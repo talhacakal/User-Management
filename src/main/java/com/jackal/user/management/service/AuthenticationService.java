@@ -3,6 +3,7 @@ package com.jackal.user.management.service;
 import com.jackal.user.management.token.JwtService;
 import com.jackal.user.management.token.Token;
 import com.jackal.user.management.token.TokenRepository;
+import com.jackal.user.management.token.TokenType;
 import com.jackal.user.management.user.AppUser;
 import com.jackal.user.management.user.AppUserRepository;
 import com.jackal.user.management.dto.AuthenticationRequest;
@@ -80,13 +81,13 @@ public class AuthenticationService {
     }
     public ResponseEntity<?> verifyEmail(HttpServletRequest request, String token) {
         AppUser user;
-        if (this.jwtService.isTokenExpired(token)){
+        if (this.jwtService.isTokenExpired(token) || !this.jwtService.getExtraClaimFromToken(token, "TokenType").equals(TokenType.VERIFICATION.name())){
             user = this.userRepository.findByEmail(this.jwtService.getUsarnemeFromTokenIgnoreExp(token)).orElseThrow();
 
             var baseURI = request.getRequestURL().toString().replace(request.getRequestURI(), "");
             this.eventPublisher.publishEvent(new RegistrationCompleteEvent(user,baseURI));
 
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("The email verification link expired. Email sent again.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("The email verification link invalid. Email sent again.");
         }
         user = this.userRepository.findByEmail(this.jwtService.getUsernameFromJwt(token)).orElseThrow();
 
@@ -98,7 +99,7 @@ public class AuthenticationService {
     public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         String requestRefreshToken = this.jwtService.extractTokenFromCookie(request.getCookies(), REFRESH);
         String refreshToken = this.tokenRepository
-                .findByToken(requestRefreshToken)
+                .findByTokenAndTokenType(requestRefreshToken, REFRESH)
                 .map(Token::getToken)
                 .orElseThrow(() -> new NoSuchElementException("Refresh token do not match or missing."));
 
@@ -108,7 +109,7 @@ public class AuthenticationService {
         if (this.jwtService.isTokenValid(refreshToken, user)){
             var jwt = this.jwtService.generateJwtToken(user);
 
-            this.jwtService.deleteUserJwtTokens(user.getEmail());
+            this.jwtService.deleteUserTokens(user.getEmail(), BEARER);
             this.jwtService.saveJwtToken(user, jwt);
 
             return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, generateJwtCookie(jwt)).build();
