@@ -1,4 +1,4 @@
-package com.jackal.user.management.exception;
+package com.jackal.user.management.utils;
 
 import lombok.Data;
 

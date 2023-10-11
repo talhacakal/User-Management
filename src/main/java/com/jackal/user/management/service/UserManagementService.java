@@ -3,12 +3,13 @@ package com.jackal.user.management.service;
 import com.jackal.user.management.dto.ChangePasswordRequest;
 import com.jackal.user.management.dto.PasswordRenewRequest;
 import com.jackal.user.management.event.ForgotPasswordEvent;
-import com.jackal.user.management.exception.ErrorDetails;
+import com.jackal.user.management.utils.ErrorDetails;
 import com.jackal.user.management.exception.UserNotFoundException;
 import com.jackal.user.management.token.JwtService;
 import com.jackal.user.management.token.TokenType;
 import com.jackal.user.management.user.AppUser;
 import com.jackal.user.management.user.AppUserRepository;
+import com.jackal.user.management.utils.SuccessResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,10 +35,10 @@ public class UserManagementService {
         var user = (AppUser) ((UsernamePasswordAuthenticationToken) userPrincipal).getPrincipal();
 
         if (!this.passwordEncoder.matches(passwordRequest.getCurrentPassword(), user.getPassword()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Wrong password.");
+            return new ResponseEntity<ErrorDetails>(new ErrorDetails("Wrong password.", HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
 
         if (!passwordRequest.getNewPassword().equals(passwordRequest.getConfirmationPassword()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password are not same.");
+            return new ResponseEntity<ErrorDetails>(new ErrorDetails("Password are not same.", HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
 
         user.setPassword(passwordEncoder.encode(passwordRequest.getNewPassword()));
         this.userRepository.save(user);
@@ -51,13 +52,13 @@ public class UserManagementService {
         var baseURI = request.getRequestURL().toString().replace(request.getRequestURI(), "");
         this.eventPublisher.publishEvent(new ForgotPasswordEvent(user, baseURI));
 
-        return ResponseEntity.ok("Password reset email sent");
+        return new ResponseEntity<SuccessResponse>(new SuccessResponse("Password reset email sent", HttpStatus.OK.value()), HttpStatus.OK);
     }
     public ResponseEntity<?> renewPassword(String token, PasswordRenewRequest passwordRenew) throws UserNotFoundException {
-
-        if (this.jwtService.isTokenExpired(token)  || !this.jwtService.getExtraClaimFromToken(token, "TokenType").equals(TokenType.PASSWORD_REFRESH.name()))
-            return new ResponseEntity<>(new ErrorDetails("Token is invalid.", HttpStatus.FORBIDDEN.value()), HttpStatus.UNAUTHORIZED);
-
+        if (this.jwtService.isTokenExpired(token))
+            return new ResponseEntity<>(new ErrorDetails("Token is expired.", HttpStatus.FORBIDDEN.value()), HttpStatus.UNAUTHORIZED);
+        if (!this.jwtService.getExtraClaimFromToken(token, "TokenType").equals(TokenType.PASSWORD_REFRESH.name()))
+            return new ResponseEntity<>(new ErrorDetails("Invalid token.", HttpStatus.FORBIDDEN.value()), HttpStatus.UNAUTHORIZED);
         if (!passwordRenew.getNewPassword().equals(passwordRenew.getConfirmationPassword()))
             throw new BadCredentialsException("Passwords do not match.");
 

@@ -1,15 +1,17 @@
 package com.jackal.user.management.service;
 
+import com.jackal.user.management.dto.AuthenticationRequest;
+import com.jackal.user.management.dto.RegisterRequest;
+import com.jackal.user.management.event.ClearUserTokensEvent;
+import com.jackal.user.management.event.RegistrationCompleteEvent;
 import com.jackal.user.management.token.JwtService;
 import com.jackal.user.management.token.Token;
 import com.jackal.user.management.token.TokenRepository;
 import com.jackal.user.management.token.TokenType;
 import com.jackal.user.management.user.AppUser;
 import com.jackal.user.management.user.AppUserRepository;
-import com.jackal.user.management.dto.AuthenticationRequest;
-import com.jackal.user.management.dto.RegisterRequest;
-import com.jackal.user.management.event.ClearUserTokensEvent;
-import com.jackal.user.management.event.RegistrationCompleteEvent;
+import com.jackal.user.management.utils.ErrorDetails;
+import com.jackal.user.management.utils.SuccessResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -62,7 +64,7 @@ public class AuthenticationService {
     public ResponseEntity<?> register(HttpServletRequest request, RegisterRequest register) {
         boolean userExits = this.userRepository.findByEmail(register.getEmail()).isEmpty();
         if (!userExits)
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists: " + register.getEmail());
+            return new ResponseEntity<ErrorDetails>(new ErrorDetails(("Email already exists: " + register.getEmail()), HttpStatus.CONFLICT.value()),HttpStatus.CONFLICT);
 
         AppUser newUser = new AppUser(
                 register.getFirstname(),
@@ -76,25 +78,21 @@ public class AuthenticationService {
         var baseURI = request.getRequestURL().toString().replace(request.getRequestURI(), "");
         this.eventPublisher.publishEvent(new RegistrationCompleteEvent(savedUser, baseURI));
 
-        return ResponseEntity.ok("Registration successful. Please check your email.");
-
+        return new ResponseEntity<SuccessResponse>(new SuccessResponse("Registration successful. Please check your email.", HttpStatus.OK.value()),HttpStatus.OK);
     }
     public ResponseEntity<?> verifyEmail(HttpServletRequest request, String token) {
-        AppUser user;
-        if (this.jwtService.isTokenExpired(token) || !this.jwtService.getExtraClaimFromToken(token, "TokenType").equals(TokenType.VERIFICATION.name())){
-            user = this.userRepository.findByEmail(this.jwtService.getUsarnemeFromTokenIgnoreExp(token)).orElseThrow();
-
+        AppUser user = this.userRepository.findByEmail(this.jwtService.getUsarnemeFromTokenIgnoreExp(token)).orElseThrow();
+        if (this.jwtService.isTokenExpired(token) && !this.jwtService.getExtraClaimFromToken(token, "TokenType").equals(TokenType.VERIFICATION.name())){
             var baseURI = request.getRequestURL().toString().replace(request.getRequestURI(), "");
             this.eventPublisher.publishEvent(new RegistrationCompleteEvent(user,baseURI));
 
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("The email verification link invalid. Email sent again.");
+            return new ResponseEntity<ErrorDetails>(
+                    new ErrorDetails("The email verification link invalid. Email sent again.", HttpStatus.FORBIDDEN.value()), HttpStatus.FORBIDDEN);
         }
-        user = this.userRepository.findByEmail(this.jwtService.getUsernameFromJwt(token)).orElseThrow();
-
         user.setEnabled(true);
         this.userRepository.save(user);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new SuccessResponse("Email verified.", HttpStatus.OK.value()));
     }
     public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         String requestRefreshToken = this.jwtService.extractTokenFromCookie(request.getCookies(), REFRESH);
@@ -114,7 +112,7 @@ public class AuthenticationService {
 
             return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, generateJwtCookie(jwt)).build();
 
-        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token is not valid.");
+        }else return new ResponseEntity<ErrorDetails>(new ErrorDetails("Refresh token is not valid.", HttpStatus.BAD_REQUEST.value()),HttpStatus.BAD_REQUEST);
     }
 
 
