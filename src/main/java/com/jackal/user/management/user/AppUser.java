@@ -1,6 +1,7 @@
 package com.jackal.user.management.user;
 
 import com.jackal.user.management.token.Token;
+import com.jackal.user.management.utils.annotation.ValidPassword;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class AppUser implements UserDetails {
     private String lastname;
     @Column(unique = true)
     private String email;
+    @ValidPassword
     private String password;
     @Column(columnDefinition = "default false")
     private boolean enabled;

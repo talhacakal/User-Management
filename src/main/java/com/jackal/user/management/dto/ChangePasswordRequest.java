@@ -1,6 +1,6 @@
 package com.jackal.user.management.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.jackal.user.management.utils.annotation.ValidPassword;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,11 +8,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ChangePasswordRequest {
 
-    @NotBlank(message = "Password can not be blank.")
     private String currentPassword;
-    @NotBlank(message = "Password can not be blank.")
+    @ValidPassword
     private String newPassword;
-    @NotBlank(message = "Password can not be blank.")
     private String confirmationPassword;
 
 }

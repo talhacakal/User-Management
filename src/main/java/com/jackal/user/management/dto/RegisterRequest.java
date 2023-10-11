@@ -1,6 +1,7 @@
 package com.jackal.user.management.dto;
 
 import com.jackal.user.management.user.Role;
+import com.jackal.user.management.utils.annotation.ValidPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,7 @@ public class RegisterRequest {
     private String lastname;
     @Email(message = "Enter valid email.")
     private String email;
-    @NotBlank(message = "Password can not be blank.")
+    @ValidPassword
     private String password;
     private Role role;
 }
